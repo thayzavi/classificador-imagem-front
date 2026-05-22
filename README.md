@@ -129,13 +129,9 @@ NEXT_PUBLIC_API_URL=
 
 # 📌 Estrutura das Rotas
 
-## Rotas Públicas
+## Link com as rotas: 
+https://api-classificador-img.onrender.com/apidocs/
 
-| Rota | Descrição |
-|---|---|
-| / | Landing Page |
-| /login | Login |
-| /cadastro | Cadastro |
 
 ---
 
