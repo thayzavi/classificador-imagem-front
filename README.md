@@ -1,4 +1,4 @@
-# 🦟 Dengue AI Frontend
+# 🦟 BioLens front-end
 
 Front-end do sistema inteligente de identificação de focos de dengue por imagens utilizando Inteligência Artificial.
 
@@ -17,6 +17,7 @@ O projeto tem como objetivo auxiliar no combate à dengue através de uma aplica
 O sistema está sendo desenvolvido como projeto acadêmico da disciplina:
 
 ## Faculdade Senac
+
 Curso: Análise e Desenvolvimento de Sistemas  
 Disciplina: Eletiva III — Inteligência Artificial
 
@@ -55,16 +56,54 @@ Disciplina: Eletiva III — Inteligência Artificial
 src/
 │
 ├── app/
+│   ├── analysis/
+│   │   └── [id]/
+│   │       └── page.tsx
+│   │
+│   ├── analysis-details/
+│   │   └── [id]/
+│   │       └── page.tsx
+│   │
+│   ├── dashboard/
+│   │   └── page.tsx
+│   │
+│   ├── history/
+│   │   └── page.tsx
+│   │
+│   ├── new-analysis/
+│   │   └── page.tsx
+│   │
+│   ├── processing/
+│   │   └── page.tsx
+│   │
+│   ├── profile/
+│   │   └── page.tsx
+│   │
+│   ├── sign-in/
+│   │   └── page.tsx
+│   │
+│   ├── sign-up/
+│   │   └── page.tsx
+│   │
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+│
 ├── components/
+│   ├── ui/
+│   ├── forms/
+│   ├── layout/
+│   ├── cards/
+│   ├── loading/
+│   └── sidebar/
+│
 ├── services/
 ├── hooks/
 ├── store/
-├── utils/
 ├── types/
-├── constants/
-├── styles/
 ├── lib/
-└── mocks/
+├── config/
+└── middleware.ts
 ```
 
 ---
@@ -127,7 +166,7 @@ NEXT_PUBLIC_API_URL=
 
 ---
 
-# 📌 Estrutura das Rotas
+# 🌐 Rotas Front-end
 
 ## Link com as rotas: 
 https://api-classificador-img.onrender.com/apidocs/
@@ -139,19 +178,126 @@ https://api-classificador-img.onrender.com/apidocs/
 
 | Rota | Descrição |
 |---|---|
-| /home | Página inicial |
-| /nova-analise | Nova análise |
-| /resultado | Resultado da análise |
-| /historico | Histórico |
-| /analise/[id] | Detalhes da análise |
+| `/dashboard` | Página inicial |
+| `/new-analysis` | Nova análise |
+| `/processing` | Tela de processamento |
+| `/history` | Histórico |
+| `/profile` | Perfil do usuário |
+| `/analysis/[id]` | Resultado da análise |
+| `/analysis-details/[id]` | Detalhes completos da análise |
 
 ---
 
-# ⚠️ Integrações e Rotas da API
+# 🔌 Rotas da API
 
-As rotas oficiais da API e os contratos do Back-end ainda estão em definição.
+## 🔐 Auth
 
-As informações deste tópico serão atualizadas conforme a integração entre Front-end e Back-end for concluída.
+Rotas responsáveis pela autenticação do usuário.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/auth/login` | Realizar login |
+| POST | `/auth/register` | Criar conta |
+| POST | `/auth/logout` | Logout do usuário |
+
+---
+
+# 👤 User
+
+Rotas relacionadas ao perfil do usuário.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/user/perfil` | Buscar perfil do usuário |
+| PUT | `/user/perfil` | Atualizar perfil do usuário |
+| DELETE | `/user/perfil` | Excluir conta do usuário |
+
+---
+
+# 🧪 Analysis
+
+Rotas responsáveis pelas análises realizadas pelo sistema.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/analysis` | Criar nova análise |
+| GET | `/analysis/history` | Histórico de análises |
+| GET | `/analysis/{id}` | Buscar detalhes da análise |
+| DELETE | `/analysis/{id}` | Excluir análise |
+| GET | `/analysis/download/{id}` | Download do PDF da análise |
+
+---
+
+# 📥 Parameters
+
+## `/analysis/{id}`
+
+### Exemplo
+
+```http
+GET /analysis/1
+```
+
+### Parameters
+
+| Nome | Tipo | Descrição |
+|---|---|---|
+| id | number | ID da análise |
+
+---
+
+## `/analysis/download/{id}`
+
+### Exemplo
+
+```http
+GET /analysis/download/1
+```
+
+### Parameters
+
+| Nome | Tipo | Descrição |
+|---|---|---|
+| id | number | ID da análise para download |
+
+---
+
+# 🔐 Header de Autenticação
+
+```http
+Authorization: Bearer TOKEN_JWT
+```
+
+---
+
+# 📦 Exemplo de Request
+
+## Criar análise
+
+```http
+POST /analysis
+```
+
+### Body
+
+```json
+{
+  "image": "file.jpg"
+}
+```
+
+---
+
+# 📤 Exemplo de Response
+
+```json
+{
+  "id": 1,
+  "status": "completed",
+  "risk": "high",
+  "created_at": "2026-05-22"
+}
+```
 
 ---
 
@@ -167,8 +313,8 @@ components/
 ├── forms/
 ├── layout/
 ├── cards/
-├── feedback/
-└── maps/
+├── loading/
+└── sidebar/
 ```
 
 ---
@@ -256,10 +402,11 @@ analysis.service.ts
 - Upload de imagens
 - Resultado da análise
 - Histórico
-- Geolocalização
-- Mapa de focos
-- Download de relatório
+- Download PDF
+- Perfil usuário
 - Integração com IA
+- Dashboard
+- Responsividade
 
 ---
 
@@ -296,6 +443,17 @@ Vercel
 ## Back-end
 
 Render
+
+---
+
+# 🔒 Autenticação
+
+O sistema utilizará:
+
+- JWT
+- Middleware Next.js
+- Persistência de token
+- Rotas protegidas
 
 ---
 
