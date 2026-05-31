@@ -13,7 +13,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-semibold text-gray-800">Olá, Maria</h1>
           <Link
-            href="/nova-analise"
+            href="/new-analysis"
             className="flex items-center gap-2 bg-[#00C9A7] text-white px-4 py-2 rounded-md hover:bg-[#00ddb8] transition-colors text-sm font-medium"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
