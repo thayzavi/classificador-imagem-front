@@ -15,7 +15,7 @@ export default function ProcessingPage() {
           clearInterval(interval);
 
           setTimeout(() => {
-            router.push("/dashboard");
+            router.push("/analysis/[id]");
             // ou:
             // router.push("/analysis/1");
           }, 500);

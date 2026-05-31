@@ -20,7 +20,8 @@ export function Sidebar({
   return (
     <aside
       className="
-        w-[200px]
+        w-[72px]
+        md:w-[200px]
         min-h-screen
         bg-gradient-to-b
         from-[#00C9A7]
@@ -28,10 +29,13 @@ export function Sidebar({
         to-[#1565F0]
         flex
         flex-col
-        px-4
+        px-2
+        md:px-4
         py-6
         relative
         shadow-2xl
+        transition-all
+        duration-300
       "
     >
       {/* Logo */}
@@ -49,28 +53,32 @@ export function Sidebar({
             backdrop-blur-sm
             border
             border-white/10
-            p-3
+            p-2
+            md:p-3
           "
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center md:justify-start gap-3">
             <div
               className="
-                w-11
-                h-11
+                w-10
+                h-10
+                md:w-11
+                md:h-11
                 rounded-full
                 bg-white/15
                 flex
                 items-center
                 justify-center
+                shrink-0
               "
             >
               <User
-                size={22}
+                size={20}
                 className="text-white"
               />
             </div>
 
-            <div>
+            <div className="hidden md:block">
               <p className="text-white font-semibold text-sm">
                 Olá, {userName}
               </p>
@@ -102,9 +110,12 @@ export function Sidebar({
             className="
               flex
               items-center
+              justify-center
+              md:justify-start
               gap-2
               rounded-xl
-              px-3
+              px-2
+              md:px-3
               py-2
               bg-red-500/10
               border
@@ -116,7 +127,8 @@ export function Sidebar({
             "
           >
             <LogOut size={18} />
-            <span className="text-sm font-medium">
+
+            <span className="hidden md:inline text-sm font-medium">
               Sair
             </span>
           </Link>
@@ -124,8 +136,12 @@ export function Sidebar({
 
         {showVersion && (
           <div className="text-center">
-            <span className="text-xs text-white/70">
+            <span className="hidden md:inline text-xs text-white/70">
               Versão 1.0
+            </span>
+
+            <span className="md:hidden text-[10px] text-white/60">
+              v1
             </span>
           </div>
         )}
