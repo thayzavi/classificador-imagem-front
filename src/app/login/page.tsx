@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/bio-lens/Sidebar";
 import { FormInput } from "@/components/bio-lens/FormInput";
 import { PrimaryButton } from "@/components/bio-lens/PrimaryButton";
 
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");

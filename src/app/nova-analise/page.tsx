@@ -54,7 +54,7 @@ export default function NovaAnalisePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simula envio - volta para dashboard
-    router.push("/dashboard");
+    router.push("/processing");
   };
 
   const handleCancel = () => {
