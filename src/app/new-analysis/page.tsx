@@ -2,6 +2,9 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 import { Sidebar } from "@/components/bio-lens/Sidebar";
 import { FormInput } from "@/components/bio-lens/FormInput";
 import { PrimaryButton } from "@/components/bio-lens/PrimaryButton";
@@ -11,7 +14,8 @@ export default function NovaAnalisePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isDragging, setIsDragging] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] =
+    useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     nomeBairro: "",
@@ -20,7 +24,8 @@ export default function NovaAnalisePage() {
   });
 
   const handleChange =
-    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: string) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       setFormData((prev) => ({
         ...prev,
         [field]: e.target.value,
@@ -105,32 +110,68 @@ export default function NovaAnalisePage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar showUser userName="Maria" showLogout />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-bold text-gray-800">
-            Nova Análise
-          </h1>
+        <div className="flex items-start gap-4 mb-8">
+          <Link
+            href="/dashboard"
+            className="
+              flex
+              items-center
+              justify-center
+              min-w-[44px]
+              h-11
+              rounded-full
+              bg-white
+              shadow-md
+              hover:shadow-lg
+              transition-all
+            "
+          >
+            <ArrowLeft size={22} />
+          </Link>
 
-          <p className="text-gray-600 text-sm mt-1">
-            Envie uma imagem para análise de possíveis focos
-            do mosquito da dengue
-          </p>
+          <div>
+            <h1 className="text-2xl md:text-4xl font-bold">
+              Nova Análise
+            </h1>
+
+            <p className="mt-2 text-slate-600 text-sm md:text-base">
+              Envie uma imagem para identificar possíveis focos do mosquito da dengue.
+            </p>
+          </div>
         </div>
 
-        {/* Conteúdo Principal */}
-        <div className="flex gap-8">
+        {/* Conteúdo */}
+        <div className="flex flex-col xl:flex-row gap-8">
           {/* Upload */}
           <div className="flex-1">
             <div
-              className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center min-h-[280px] transition-colors cursor-pointer ${
-                isDragging
-                  ? "border-[#00C9A7] bg-[#00C9A7]/5"
-                  : "border-gray-300 bg-white hover:border-gray-400"
-              }`}
+              className={`
+                bg-white
+                rounded-3xl
+                shadow-lg
+                border-2
+                border-dashed
+                p-6
+                md:p-8
+                min-h-[250px]
+                md:min-h-[420px]
+                flex
+                flex-col
+                items-center
+                justify-center
+                transition-all
+                cursor-pointer
+                ${
+                  isDragging
+                    ? "border-[#00C9A7] bg-[#00C9A7]/5"
+                    : "border-slate-300 hover:border-[#0891B2]"
+                }
+              `}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -145,34 +186,26 @@ export default function NovaAnalisePage() {
               />
 
               {selectedFile ? (
-                <div className="text-center">
-                  <svg
-                    className="w-12 h-12 text-green-500 mx-auto mb-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                <div className="w-full">
+                  <img
+                    src={URL.createObjectURL(selectedFile)}
+                    alt="Preview"
+                    className="w-full max-h-[350px] object-contain rounded-2xl mb-4"
+                  />
 
-                  <p className="font-medium text-gray-700">
+                  <p className="font-semibold text-slate-700 text-center">
                     {selectedFile.name}
                   </p>
 
-                  <p className="text-sm text-gray-500 mt-1">
-                    Arquivo selecionado
+                  <p className="text-sm text-slate-500 text-center mt-1">
+                    Arquivo selecionado com sucesso
                   </p>
                 </div>
               ) : (
                 <>
-                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-5">
                     <svg
-                      className="w-8 h-8 text-gray-400"
+                      className="w-10 h-10 text-slate-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -186,18 +219,20 @@ export default function NovaAnalisePage() {
                     </svg>
                   </div>
 
-                  <p className="text-center text-sm text-gray-600">
-                    Arraste e solte a imagem aqui ou clique
-                    <br />
-                    para selecionar
+                  <p className="text-center text-slate-700 font-medium">
+                    Arraste sua imagem aqui
                   </p>
 
-                  <p className="text-xs text-gray-400 mt-3">
-                    Formatos aceitos: JPG, PNG, JPEG
+                  <p className="text-center text-slate-500 mt-2">
+                    ou clique para selecionar
                   </p>
 
-                  <p className="text-xs text-gray-400">
-                    Tamanho Máximo: 10MB
+                  <p className="text-xs text-slate-400 mt-5">
+                    JPG • JPEG • PNG
+                  </p>
+
+                  <p className="text-xs text-slate-400">
+                    Máximo de 10MB
                   </p>
                 </>
               )}
@@ -205,34 +240,31 @@ export default function NovaAnalisePage() {
           </div>
 
           {/* Formulário */}
-          <div className="w-72 space-y-4">
+          <div className="w-full xl:w-80 bg-white rounded-3xl shadow-lg p-6 space-y-4">
             <FormInput
-              label="Nome do Bairro:"
+              label="Nome do Bairro"
               type="text"
               value={formData.nomeBairro}
               onChange={handleChange("nomeBairro")}
             />
 
             <FormInput
-              label="Local da foto:"
+              label="Local da Foto"
               type="text"
               value={formData.localFoto}
               onChange={handleChange("localFoto")}
             />
 
             <FormInput
-              label="Data:"
+              label="Data"
               type="date"
               value={formData.data}
               onChange={handleChange("data")}
             />
 
-            <div className="pt-4 space-y-3">
-              <PrimaryButton
-                onClick={handleSubmit}
-                fullWidth
-              >
-                Enviar imagem
+            <div className="pt-6 space-y-3">
+              <PrimaryButton onClick={handleSubmit} fullWidth>
+                Enviar Imagem
               </PrimaryButton>
 
               <PrimaryButton
@@ -247,23 +279,23 @@ export default function NovaAnalisePage() {
         </div>
 
         {/* Dicas */}
-        <div className="mt-8 bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="font-semibold text-gray-800 mb-4">
+        <div className="mt-8 bg-white rounded-3xl p-6 md:p-8 shadow-lg">
+          <h3 className="font-bold text-slate-800 text-lg mb-5">
             Dicas para melhores resultados
           </h3>
 
-          <div className="flex gap-8">
-            <div className="flex items-center gap-2">
-              <span>✅</span>
-              <span className="text-sm text-gray-600">
-                Fotografe objetos que possam acumular água
+          <div className="grid md:grid-cols-2 gap-5">
+            <div className="flex items-center gap-3">
+              <span className="text-green-500 text-xl">✅</span>
+              <span className="text-slate-600">
+                Fotografe recipientes ou locais que possam acumular água.
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span>✅</span>
-              <span className="text-sm text-gray-600">
-                Boa iluminação
+            <div className="flex items-center gap-3">
+              <span className="text-green-500 text-xl">✅</span>
+              <span className="text-slate-600">
+                Utilize ambientes com boa iluminação.
               </span>
             </div>
           </div>
