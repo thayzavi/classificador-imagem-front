@@ -6,28 +6,70 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/bio-lens/Sidebar";
 import { FormInput } from "@/components/bio-lens/FormInput";
 import { PrimaryButton } from "@/components/bio-lens/PrimaryButton";
-
+import { login } from "@/services/auth.service";
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simula login - navega para dashboard
-    router.push("/dashboard");
+
+    try {
+      setLoading(true);
+
+      console.log("Tentando fazer login...");
+      console.log("Email:", email);
+
+      const response = await login(email, senha);
+
+      console.log("RESPOSTA API:", response);
+
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+      }
+
+      if (response.usuario) {
+        localStorage.setItem(
+          "usuario",
+          JSON.stringify(response.usuario)
+        );
+      }
+
+      alert("Login realizado com sucesso!");
+
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("ERRO LOGIN:", error);
+
+      if (error.response) {
+        console.error("Status:", error.response.status);
+        console.error("Dados:", error.response.data);
+      }
+
+      alert("Erro ao fazer login. Verifique o console.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar showVersion />
-      
+
       <main className="flex-1 flex items-center justify-center p-8">
         <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">Bem-vindo!</h1>
-            <p className="text-gray-500 text-sm mt-1">Faça login para continuar</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Bem-vindo!
+            </h1>
+
+            <p className="text-gray-500 text-sm mt-1">
+              Faça login para continuar
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -36,7 +78,6 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder=""
               required
             />
 
@@ -45,20 +86,26 @@ export default function LoginPage() {
               type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              placeholder=""
               required
             />
 
             <div className="pt-4">
-              <PrimaryButton type="submit" fullWidth>
-                Entrar
+              <PrimaryButton
+                type="submit"
+                fullWidth
+                disabled={loading}
+              >
+                {loading ? "Entrando..." : "Entrar"}
               </PrimaryButton>
             </div>
           </form>
 
           <p className="text-center mt-6 text-sm text-gray-600">
             Não tem uma conta?{" "}
-            <Link href="/sign-up" className="text-[#00C9A7] font-medium hover:underline">
+            <Link
+              href="/register"
+              className="text-[#00C9A7] font-medium hover:underline"
+            >
               Cadastre-se
             </Link>
           </p>
