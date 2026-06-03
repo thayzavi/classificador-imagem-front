@@ -1,17 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import { Sidebar } from "@/components/bio-lens/Sidebar";
 import { FormInput } from "@/components/bio-lens/FormInput";
 import { PrimaryButton } from "@/components/bio-lens/PrimaryButton";
 import { register } from "@/services/register.service";
 
+interface FormData {
+  nomeCompleto: string;
+  email: string;
+  senha: string;
+  endereco: string;
+  cep: string;
+  numeroResidencia: string;
+}
+
 export default function CadastroPage() {
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     nomeCompleto: "",
     email: "",
     senha: "",
@@ -21,16 +31,20 @@ export default function CadastroPage() {
   });
 
   const [aceitaTermos, setAceitaTermos] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange =
-    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof FormData) =>
+    (e: ChangeEvent<HTMLInputElement>) => {
       setFormData((prev) => ({
         ...prev,
         [field]: e.target.value,
       }));
     };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
     if (!aceitaTermos) {
@@ -39,8 +53,7 @@ export default function CadastroPage() {
     }
 
     try {
-      console.log("Enviando cadastro...");
-      console.log(formData);
+      setLoading(true);
 
       const response = await register({
         nome: formData.nomeCompleto,
@@ -56,15 +69,16 @@ export default function CadastroPage() {
       alert("Cadastro realizado com sucesso!");
 
       router.push("/login");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("ERRO CADASTRO:", error);
 
-      if (error.response) {
-        console.error("Status:", error.response.status);
-        console.error("Dados:", error.response.data);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Erro ao cadastrar usuário.");
       }
-
-      alert("Erro ao cadastrar usuário.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,7 +98,10 @@ export default function CadastroPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <FormInput
               label="Nome completo"
               type="text"
@@ -130,7 +147,9 @@ export default function CadastroPage() {
                 label="Número"
                 type="text"
                 value={formData.numeroResidencia}
-                onChange={handleChange("numeroResidencia")}
+                onChange={handleChange(
+                  "numeroResidencia"
+                )}
                 required
               />
             </div>
@@ -140,7 +159,10 @@ export default function CadastroPage() {
                 type="checkbox"
                 id="termos"
                 checked={aceitaTermos}
-                onChange={(e) => setAceitaTermos(e.target.checked)}
+                onChange={(e) =>
+                  setAceitaTermos(e.target.checked)
+                }
+                className="mt-1"
               />
 
               <label
@@ -151,15 +173,21 @@ export default function CadastroPage() {
               </label>
             </div>
 
-            <PrimaryButton type="submit" fullWidth>
-              Cadastrar-se
+            <PrimaryButton
+              type="submit"
+              fullWidth
+              disabled={loading}
+            >
+              {loading
+                ? "Cadastrando..."
+                : "Cadastrar-se"}
             </PrimaryButton>
           </form>
 
           <p className="text-center mt-4 text-sm text-gray-600">
             Já possui conta?{" "}
             <Link
-              href="/sign-in"
+              href="/login"
               className="text-[#00C9A7] font-medium hover:underline"
             >
               Entrar

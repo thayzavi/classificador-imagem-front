@@ -21,12 +21,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      console.log("Tentando fazer login...");
-      console.log("Email:", email);
-
       const response = await login(email, senha);
-
-      console.log("RESPOSTA API:", response);
 
       if (response.token) {
         localStorage.setItem("token", response.token);
@@ -40,17 +35,16 @@ export default function LoginPage() {
       }
 
       alert("Login realizado com sucesso!");
-
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("ERRO LOGIN:", error);
 
-      if (error.response) {
-        console.error("Status:", error.response.status);
-        console.error("Dados:", error.response.data);
+      // tratamento correto de erro sem any
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Erro ao fazer login. Verifique o console.");
       }
-
-      alert("Erro ao fazer login. Verifique o console.");
     } finally {
       setLoading(false);
     }

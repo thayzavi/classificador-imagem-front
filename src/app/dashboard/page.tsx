@@ -6,252 +6,194 @@ import { Camera, History } from "lucide-react";
 import { Sidebar } from "@/components/bio-lens/Sidebar";
 
 interface Analise {
-  id: number;
-  nomeBairro: string;
-  localFoto: string;
-  data: string;
-  imagem: string;
-  status: string;
+  id: string;
+  bairro: string;
+  local: string;
+  resultado: string;
+  confianca: number;
+  data_foto: string;
 }
+
+interface UserProfile {
+  nome: string;
+}
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://api-classificador-img.onrender.com";
 
 export default function DashboardPage() {
   const [analises, setAnalises] = useState<Analise[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState("");
+  const [userName, setUserName] = useState("Usuário");
 
   useEffect(() => {
-    const dados = JSON.parse(
-      localStorage.getItem("analises") || "[]"
-    );
+    async function carregarTudo() {
+      try {
+        setLoading(true);
+        setErro("");
 
-    setAnalises(dados);
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("token")
+            : null;
+
+        if (!token) {
+          setErro("Usuário não autenticado.");
+          setLoading(false);
+          return;
+        }
+
+        // ================= PERFIL =================
+        try {
+          const profileResponse = await fetch(
+            `${API_URL}/user/perfil`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          const profileData: UserProfile =
+            await profileResponse.json();
+
+          if (profileResponse.ok && profileData?.nome) {
+            setUserName(profileData.nome);
+          }
+        } catch (err) {
+          console.warn("Erro ao buscar perfil:", err);
+        }
+
+        // ================= HISTÓRICO =================
+        const response = await fetch(
+          `${API_URL}/analysis/history`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              data.msg ||
+              "Erro ao carregar análises"
+          );
+        }
+
+        setAnalises(data);
+      } catch (error: unknown) {
+        console.error(error);
+
+        setErro(
+          error instanceof Error
+            ? error.message
+            : "Erro inesperado"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregarTudo();
   }, []);
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar showUser userName="Maria" showLogout />
+      {/* NOME DINÂMICO AQUI */}
+      <Sidebar showUser userName={userName} showLogout />
 
       <main className="flex-1 p-4 md:p-6 lg:p-8">
-        {/* Header */}
-        <div
-          className="
-            flex
-            flex-col
-            sm:flex-row
-            sm:items-center
-            sm:justify-between
-            gap-4
-            mb-8
-          "
-        >
+        {/* HEADER */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-              Olá, Maria 👋
+              Olá, {userName} 👋
             </h1>
-
             <p className="text-slate-500 mt-1">
-              Bem-vinda ao BioLens
+              Bem-vindo ao BioLens
             </p>
           </div>
 
           <Link
             href="/new-analysis"
-            className="
-              w-full
-              sm:w-auto
-              flex
-              items-center
-              justify-center
-              gap-2
-              px-6
-              py-3
-              rounded-xl
-              text-white
-              font-semibold
-              shadow-lg
-              bg-gradient-to-r
-              from-[#00C9A7]
-              via-[#0891B2]
-              to-[#1565F0]
-              hover:scale-105
-              hover:shadow-xl
-              transition-all
-              duration-300
-            "
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-[#00C9A7] via-[#0891B2] to-[#1565F0]"
           >
             <Camera size={18} />
             Nova Análise
           </Link>
         </div>
 
-        {/* Banner */}
-        <div
-          className="
-            relative
-            overflow-hidden
-            bg-gradient-to-r
-            from-[#00C9A7]
-            via-[#0891B2]
-            to-[#1565F0]
-            rounded-3xl
-            p-5 md:p-8
-            text-white
-            shadow-xl
-            mb-8
-          "
-        >
-          <div className="relative z-10">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">
-              BioLens
-            </h2>
-
-            <p className="max-w-2xl text-white/90 text-sm md:text-lg">
-              Utilize inteligência artificial para identificar
-              possíveis focos do mosquito da dengue através da
-              análise de imagens.
-            </p>
-          </div>
-
-          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
-
-          <div className="absolute bottom-0 right-20 w-24 h-24 rounded-full bg-white/10" />
-        </div>
-
-        {/* Últimas análises */}
-        <div className="bg-white rounded-3xl shadow-lg p-4 md:p-6">
-          <div
-            className="
-              flex
-              flex-col
-              sm:flex-row
-              sm:items-center
-              sm:justify-between
-              gap-3
-              mb-6
-            "
-          >
-            <h2 className="text-xl font-bold text-slate-800">
+        {/* CONTEÚDO */}
+        <div className="bg-white rounded-3xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">
               Últimas análises
             </h2>
 
             <Link
               href="/history"
-              className="
-                flex
-                items-center
-                gap-2
-                text-[#1565F0]
-                font-medium
-                hover:text-[#0F4DD9]
-                transition
-              "
+              className="flex items-center gap-2 text-[#1565F0]"
             >
               <History size={18} />
               Ver histórico
             </Link>
           </div>
 
-          {analises.length === 0 ? (
-            <div className="py-16 md:py-20 text-center">
-              <p className="text-slate-400 text-lg">
-                Nenhuma análise registrada
-              </p>
-
-              <Link
-                href="/new-analysis"
-                className="
-                  inline-flex
-                  items-center
-                  gap-2
-                  mt-6
-                  px-5
-                  py-3
-                  rounded-xl
-                  text-white
-                  font-medium
-                  bg-gradient-to-r
-                  from-[#00C9A7]
-                  via-[#0891B2]
-                  to-[#1565F0]
-                "
-              >
-                <Camera size={18} />
-                Realizar primeira análise
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {analises.slice(0, 3).map((analise) => (
-                <div
-                  key={analise.id}
-                  className="
-                    border
-                    border-slate-200
-                    rounded-2xl
-                    p-4
-                    hover:border-[#0891B2]
-                    hover:shadow-md
-                    transition-all
-                  "
-                >
-                  <div
-                    className="
-                      flex
-                      flex-col
-                      md:flex-row
-                      md:items-center
-                      md:justify-between
-                      gap-4
-                    "
-                  >
-                    <div
-                      className="
-                        flex
-                        flex-col
-                        sm:flex-row
-                        gap-4
-                      "
-                    >
-                      <img
-                        src={analise.imagem}
-                        alt="Análise"
-                        className="
-                          w-full
-                          sm:w-24
-                          h-40
-                          sm:h-24
-                          object-cover
-                          rounded-xl
-                        "
-                      />
-
-                      <div>
-                        <h3 className="font-semibold text-slate-800">
-                          {analise.localFoto}
-                        </h3>
-
-                        <p className="text-slate-500">
-                          {analise.nomeBairro}
-                        </p>
-
-                        <p className="text-sm text-slate-400">
-                          {analise.data}
-                        </p>
-                      </div>
-                    </div>
-
-                    <span
-                      className={`self-start md:self-auto px-4 py-2 rounded-full text-sm font-medium ${
-                        analise.status === "Foco"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-green-100 text-green-600"
-                      }`}
-                    >
-                      {analise.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {loading && (
+            <p className="text-center py-10 text-slate-500">
+              Carregando...
+            </p>
           )}
+
+          {erro && (
+            <p className="text-center py-10 text-red-600">
+              {erro}
+            </p>
+          )}
+
+          {!loading &&
+            !erro &&
+            analises.length === 0 && (
+              <p className="text-center py-10 text-slate-400">
+                Nenhuma análise encontrada.
+              </p>
+            )}
+
+          <div className="space-y-4">
+            {analises.slice(0, 3).map((analise) => (
+              <Link
+                key={analise.id}
+                href={`/analysis-details/${analise.id}`}
+                className="block border rounded-2xl p-4 hover:shadow-md transition"
+              >
+                <h3 className="font-semibold">
+                  {analise.local}
+                </h3>
+
+                <p className="text-slate-500">
+                  {analise.bairro}
+                </p>
+
+                <span
+                  className={`inline-block mt-2 px-3 py-1 rounded-full text-sm ${
+                    analise.resultado
+                      .toLowerCase()
+                      .includes("foco")
+                      ? "bg-red-100 text-red-600"
+                      : "bg-green-100 text-green-600"
+                  }`}
+                >
+                  {analise.resultado}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </main>
     </div>

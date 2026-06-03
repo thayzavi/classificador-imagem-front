@@ -21,6 +21,9 @@ export function Sidebar({
   const router = useRouter();
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     router.push("/login");
   };
 
@@ -29,8 +32,7 @@ export function Sidebar({
       {/* DESKTOP */}
       <aside
         className="
-          hidden
-          md:flex
+          hidden md:flex
           w-[220px]
           min-h-screen
           bg-gradient-to-b
@@ -38,17 +40,16 @@ export function Sidebar({
           via-[#0891B2]
           to-[#1565F0]
           flex-col
-          px-4
-          py-6
+          px-4 py-6
           shadow-2xl
         "
       >
-        {/* Logo */}
+        {/* LOGO */}
         <div className="flex justify-center">
           <Logo />
         </div>
 
-        {/* Usuário */}
+        {/* USER */}
         {showUser && (
           <div
             className="
@@ -56,23 +57,12 @@ export function Sidebar({
               rounded-2xl
               bg-white/10
               backdrop-blur-sm
-              border
-              border-white/10
+              border border-white/10
               p-3
             "
           >
             <div className="flex items-center gap-3">
-              <div
-                className="
-                  w-11
-                  h-11
-                  rounded-full
-                  bg-white/15
-                  flex
-                  items-center
-                  justify-center
-                "
-              >
+              <div className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center">
                 <User size={20} className="text-white" />
               </div>
 
@@ -82,12 +72,8 @@ export function Sidebar({
                 </p>
 
                 <Link
-                  href="/perfil"
-                  className="
-                    text-xs
-                    text-white/75
-                    hover:text-white
-                  "
+                  href="/profile"
+                  className="text-xs text-white/75 hover:text-white"
                 >
                   Ver perfil
                 </Link>
@@ -98,28 +84,22 @@ export function Sidebar({
 
         <div className="flex-1" />
 
+        {/* ACTIONS */}
         <div className="space-y-4">
           {showLogout && (
             <button
               onClick={handleLogout}
               className="
-                w-full
-                flex
-                items-center
-                gap-2
-                rounded-xl
-                px-3
-                py-2
+                w-full flex items-center gap-2
+                rounded-xl px-3 py-2
                 bg-red-500/10
-                border
-                border-red-400/20
+                border border-red-400/20
                 text-red-100
                 hover:bg-red-500/20
                 transition
               "
             >
               <LogOut size={18} />
-
               <span className="text-sm font-medium">
                 Sair
               </span>
@@ -140,54 +120,34 @@ export function Sidebar({
       <div
         className="
           md:hidden
-          fixed
-          bottom-0
-          left-0
-          right-0
+          fixed bottom-0 left-0 right-0
           z-50
           bg-gradient-to-r
           from-[#00C9A7]
           via-[#0891B2]
           to-[#1565F0]
+          border-t border-white/10
           shadow-2xl
-          border-t
-          border-white/10
         "
       >
         <div className="flex items-center justify-around py-3">
           {showUser && (
             <Link
-              href="/perfil"
-              className="
-                flex
-                flex-col
-                items-center
-                gap-1
-                text-white
-              "
+              href="/profile"
+              className="flex flex-col items-center gap-1 text-white"
             >
               <User size={22} />
-              <span className="text-xs">
-                Perfil
-              </span>
+              <span className="text-xs">Perfil</span>
             </Link>
           )}
 
           {showLogout && (
             <button
               onClick={handleLogout}
-              className="
-                flex
-                flex-col
-                items-center
-                gap-1
-                text-white
-              "
+              className="flex flex-col items-center gap-1 text-white"
             >
               <LogOut size={22} />
-              <span className="text-xs">
-                Sair
-              </span>
+              <span className="text-xs">Sair</span>
             </button>
           )}
         </div>

@@ -17,6 +17,8 @@ export default function NovaAnalisePage() {
   const [selectedFile, setSelectedFile] =
     useState<File | null>(null);
 
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     nomeBairro: "",
     localFoto: "",
@@ -66,45 +68,90 @@ export default function NovaAnalisePage() {
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
+const handleSubmit = async (
+  e?: React.FormEvent
+) => {
+  e?.preventDefault();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  try {
     if (!selectedFile) {
       alert("Selecione uma imagem.");
       return;
     }
 
-    const reader = new FileReader();
+    if (
+      !formData.nomeBairro ||
+      !formData.localFoto ||
+      !formData.data
+    ) {
+      alert("Preencha todos os campos.");
+      return;
+    }
 
-    reader.onloadend = () => {
-      const novaAnalise = {
-        id: Date.now(),
-        nomeBairro: formData.nomeBairro,
-        localFoto: formData.localFoto,
-        data: formData.data,
-        imagem: reader.result,
-        status: Math.random() > 0.5 ? "Foco" : "Sem foco",
-        criadaEm: new Date().toISOString(),
-      };
+    setLoading(true);
 
-      const analises = JSON.parse(
-        localStorage.getItem("analises") || "[]"
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Sessão expirada. Faça login novamente.");
+      router.push("/login");
+      return;
+    }
+
+    const form = new FormData();
+
+    form.append("foto", selectedFile);
+    form.append("bairro", formData.nomeBairro);
+    form.append("local", formData.localFoto);
+    form.append("data_foto", formData.data);
+
+    const response = await fetch(
+      "https://api-classificador-img.onrender.com/analysis",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("Resposta da API:", data);
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        data.msg ||
+        "Erro ao realizar análise"
       );
+    }
 
-      analises.unshift(novaAnalise);
+    alert("Análise realizada com sucesso!");
 
-      localStorage.setItem(
-        "analises",
-        JSON.stringify(analises)
-      );
+    router.push("/dashboard");
+  } catch (error) {
+    console.error(error);
 
-      router.push("/dashboard");
-    };
+    if (
+      error instanceof Error &&
+      error.message.includes("expired")
+    ) {
+      localStorage.removeItem("token");
+      router.push("/login");
+      return;
+    }
 
-    reader.readAsDataURL(selectedFile);
-  };
-
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Erro inesperado"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
   const handleCancel = () => {
     router.push("/dashboard");
   };
@@ -263,9 +310,14 @@ export default function NovaAnalisePage() {
             />
 
             <div className="pt-6 space-y-3">
-              <PrimaryButton onClick={handleSubmit} fullWidth>
-                Enviar Imagem
-              </PrimaryButton>
+            <PrimaryButton
+              onClick={handleSubmit}
+              fullWidth
+            >
+              {loading
+                ? "Analisando imagem..."
+                : "Enviar Imagem"}
+            </PrimaryButton>
 
               <PrimaryButton
                 variant="danger"
