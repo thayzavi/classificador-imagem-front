@@ -15,41 +15,42 @@ export default function LoginPage() {
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const response = await login(email, senha);
+    const response = await login(email, senha);
 
-      if (response.token) {
-        localStorage.setItem("token", response.token);
-      }
+  
+    console.log("FULL RESPONSE:", response);
 
-      if (response.usuario) {
-        localStorage.setItem(
-          "usuario",
-          JSON.stringify(response.usuario)
-        );
-      }
-
-      alert("Login realizado com sucesso!");
-      router.push("/dashboard");
-    } catch (error: unknown) {
-      console.error("ERRO LOGIN:", error);
-
-      // tratamento correto de erro sem any
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert("Erro ao fazer login. Verifique o console.");
-      }
-    } finally {
-      setLoading(false);
+    if (response.token) {
+      localStorage.setItem("token", response.token);
     }
-  };
 
+    if (response.usuario) {
+      localStorage.setItem(
+        "usuario",
+        JSON.stringify(response.usuario)
+      );
+    }
+
+    alert("Login realizado com sucesso!");
+    router.push("/dashboard");
+  } catch (error: unknown) {
+    console.error("ERRO LOGIN:", error);
+
+    if (error instanceof Error) {
+      alert(error.message);
+    } else {
+      alert("Erro ao fazer login. Verifique o console.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar showVersion />
