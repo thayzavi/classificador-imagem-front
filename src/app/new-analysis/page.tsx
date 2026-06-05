@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+} from "react";
+
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -19,32 +24,114 @@ export default function NovaAnalisePage() {
 
   const [loading, setLoading] = useState(false);
 
+  const [locationLoading, setLocationLoading] =
+    useState(true);
+
+  const [location, setLocation] = useState<{
+    latitude: number | null;
+    longitude: number | null;
+  }>({
+    latitude: null,
+    longitude: null,
+  });
+
   const [formData, setFormData] = useState({
     nomeBairro: "",
     localFoto: "",
     data: "",
   });
 
+  useEffect(() => {
+    getLocation();
+  }, []);
+
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+      alert(
+        "Seu navegador não suporta geolocalização."
+      );
+      setLocationLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        setLocation({
+          latitude,
+          longitude,
+        });
+
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+
+          const data = await response.json();
+
+          setFormData((prev) => ({
+            ...prev,
+
+            nomeBairro:
+              data.address?.suburb ||
+              data.address?.neighbourhood ||
+              "",
+
+              localFoto: "",
+          }));
+        } catch (error) {
+          console.error(
+            "Erro ao buscar endereço:",
+            error
+          );
+        }
+
+        setLocationLoading(false);
+      },
+      (error) => {
+        console.error(
+          "Erro ao obter localização:",
+          error
+        );
+
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
+
   const handleChange =
     (field: string) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: e.target.value,
-      }));
-    };
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData((prev) => ({
+          ...prev,
+          [field]: e.target.value,
+        }));
+      };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (
+    e: React.DragEvent
+  ) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (
+    e: React.DragEvent
+  ) => {
     e.preventDefault();
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (
+    e: React.DragEvent
+  ) => {
     e.preventDefault();
     setIsDragging(false);
 
@@ -68,100 +155,147 @@ export default function NovaAnalisePage() {
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
-const handleSubmit = async (
-  e?: React.FormEvent
-) => {
-  e?.preventDefault();
 
-  try {
-    if (!selectedFile) {
-      alert("Selecione uma imagem.");
-      return;
-    }
+  const handleSubmit = async (
+    e?: React.FormEvent
+  ) => {
+    e?.preventDefault();
 
-    if (
-      !formData.nomeBairro ||
-      !formData.localFoto ||
-      !formData.data
-    ) {
-      alert("Preencha todos os campos.");
-      return;
-    }
-
-    setLoading(true);
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Sessão expirada. Faça login novamente.");
-      router.push("/login");
-      return;
-    }
-
-    const form = new FormData();
-
-    form.append("foto", selectedFile);
-    form.append("bairro", formData.nomeBairro);
-    form.append("local", formData.localFoto);
-    form.append("data_foto", formData.data);
-
-    const response = await fetch(
-      "https://api-classificador-img.onrender.com/analysis",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: form,
+    try {
+      if (!selectedFile) {
+        alert("Selecione uma imagem.");
+        return;
       }
-    );
 
-    const data = await response.json();
+      if (
+        !formData.nomeBairro ||
+        !formData.localFoto ||
+        !formData.data
+      ) {
+        alert("Preencha todos os campos.");
+        return;
+      }
 
-    console.log("Resposta da API:", data);
+      setLoading(true);
 
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.msg ||
-        "Erro ao realizar análise"
+      const token =
+        localStorage.getItem("token");
+
+      if (!token) {
+        alert(
+          "Sessão expirada. Faça login novamente."
+        );
+
+        router.push("/login");
+        return;
+      }
+
+      const form = new FormData();
+
+      form.append("foto", selectedFile);
+
+      form.append(
+        "bairro",
+        formData.nomeBairro
       );
+
+      form.append(
+        "local",
+        formData.localFoto
+      );
+
+      form.append(
+        "data_foto",
+        formData.data
+      );
+
+      if (
+        location.latitude !== null &&
+        location.longitude !== null
+      ) {
+        form.append(
+          "latitude",
+          location.latitude.toString()
+        );
+
+        form.append(
+          "longitude",
+          location.longitude.toString()
+        );
+      }
+
+      const response = await fetch(
+        "https://api-classificador-img.onrender.com/analysis",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: form,
+        }
+      );
+
+      const data =
+        await response.json();
+
+      console.log(
+        "Resposta da API:",
+        data
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+          data.msg ||
+          "Erro ao realizar análise"
+        );
+      }
+
+      alert(
+        "Análise realizada com sucesso!"
+      );
+
+      router.push("/dashboard");
+    } catch (error) {
+      console.error(error);
+
+      if (
+        error instanceof Error &&
+        error.message.includes(
+          "expired"
+        )
+      ) {
+        localStorage.removeItem(
+          "token"
+        );
+
+        router.push("/login");
+        return;
+      }
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erro inesperado"
+      );
+    } finally {
+      setLoading(false);
     }
+  };
 
-    alert("Análise realizada com sucesso!");
-
-    router.push("/dashboard");
-  } catch (error) {
-    console.error(error);
-
-    if (
-      error instanceof Error &&
-      error.message.includes("expired")
-    ) {
-      localStorage.removeItem("token");
-      router.push("/login");
-      return;
-    }
-
-    alert(
-      error instanceof Error
-        ? error.message
-        : "Erro inesperado"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
   const handleCancel = () => {
     router.push("/dashboard");
   };
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar showUser userName="Maria" showLogout />
+      <Sidebar
+        showUser
+        userName="Maria"
+        showLogout
+      />
 
       <main className="flex-1 p-4 md:p-6 lg:p-8">
-        {/* Header */}
         <div className="flex items-start gap-4 mb-8">
           <Link
             href="/dashboard"
@@ -187,14 +321,14 @@ const handleSubmit = async (
             </h1>
 
             <p className="mt-2 text-slate-600 text-sm md:text-base">
-              Envie uma imagem para identificar possíveis focos do mosquito da dengue.
+              Envie uma imagem para
+              identificar possíveis focos do
+              mosquito da dengue.
             </p>
           </div>
         </div>
 
-        {/* Conteúdo */}
         <div className="flex flex-col xl:flex-row gap-8">
-          {/* Upload */}
           <div className="flex-1">
             <div
               className={`
@@ -213,26 +347,33 @@ const handleSubmit = async (
                 justify-center
                 transition-all
                 cursor-pointer
-                ${
-                  isDragging
-                    ? "border-[#00C9A7] bg-[#00C9A7]/5"
-                    : "border-slate-300 hover:border-[#0891B2]"
+                ${isDragging
+                  ? "border-[#00C9A7] bg-[#00C9A7]/5"
+                  : "border-slate-300 hover:border-[#0891B2]"
                 }
               `}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
+              onDragOver={
+                handleDragOver
+              }
+              onDragLeave={
+                handleDragLeave
+              }
               onDrop={handleDrop}
-              onClick={handleUploadClick}
+              onClick={
+                handleUploadClick
+              }
             >
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".jpg,.jpeg,.png"
-                onChange={handleFileSelect}
+                onChange={
+                  handleFileSelect
+                }
                 className="hidden"
               />
 
-              {selectedFile ? (
+             {selectedFile ? (
                 <div className="w-full">
                   <img
                     src={URL.createObjectURL(selectedFile)}
@@ -286,21 +427,22 @@ const handleSubmit = async (
             </div>
           </div>
 
-          {/* Formulário */}
+
           <div className="w-full xl:w-80 bg-white rounded-3xl shadow-lg p-6 space-y-4">
+
             <FormInput
               label="Nome do Bairro"
               type="text"
               value={formData.nomeBairro}
-              onChange={handleChange("nomeBairro")}
+              readOnly
             />
 
             <FormInput
-              label="Local da Foto"
-              type="text"
-              value={formData.localFoto}
-              onChange={handleChange("localFoto")}
-            />
+                label="Local da Foto"
+                type="text"
+                value={formData.localFoto}
+                onChange={handleChange("localFoto")}
+              />
 
             <FormInput
               label="Data"
@@ -309,19 +451,29 @@ const handleSubmit = async (
               onChange={handleChange("data")}
             />
 
+            {locationLoading && (
+              <div className="bg-slate-100 rounded-xl p-3 text-sm text-center">
+                Obtendo endereço da foto...
+              </div>
+            )}
+
             <div className="pt-6 space-y-3">
-            <PrimaryButton
-              onClick={handleSubmit}
-              fullWidth
-            >
-              {loading
-                ? "Analisando imagem..."
-                : "Enviar Imagem"}
-            </PrimaryButton>
+              <PrimaryButton
+                onClick={
+                  handleSubmit
+                }
+                fullWidth
+              >
+                {loading
+                  ? "Analisando imagem..."
+                  : "Enviar Imagem"}
+              </PrimaryButton>
 
               <PrimaryButton
                 variant="danger"
-                onClick={handleCancel}
+                onClick={
+                  handleCancel
+                }
                 fullWidth
               >
                 Cancelar
