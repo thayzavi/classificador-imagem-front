@@ -79,7 +79,7 @@ export default function NovaAnalisePage() {
               data.address?.neighbourhood ||
               "",
 
-              localFoto: "",
+            localFoto: "",
           }));
         } catch (error) {
           console.error(
@@ -235,13 +235,9 @@ export default function NovaAnalisePage() {
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
-      console.log(
-        "Resposta da API:",
-        data
-      );
+      console.log("Resposta da API:", data);
 
       if (!response.ok) {
         throw new Error(
@@ -251,11 +247,17 @@ export default function NovaAnalisePage() {
         );
       }
 
-      alert(
-        "Análise realizada com sucesso!"
-      );
+    const analysisData = {
+      id: data.analysis_id,
+      ...data.resultado,
+    };
 
-      router.push("/dashboard");
+    sessionStorage.setItem(
+      "analysisResult",
+      JSON.stringify(analysisData)
+    );
+      
+      router.push("/analysis-result");
     } catch (error) {
       console.error(error);
 
@@ -373,7 +375,7 @@ export default function NovaAnalisePage() {
                 className="hidden"
               />
 
-             {selectedFile ? (
+              {selectedFile ? (
                 <div className="w-full">
                   <img
                     src={URL.createObjectURL(selectedFile)}
@@ -434,15 +436,19 @@ export default function NovaAnalisePage() {
               label="Nome do Bairro"
               type="text"
               value={formData.nomeBairro}
-              readOnly
+              onChange={handleChange("nomeBairro")}
             />
 
+            <p className="text-xs text-slate-500">
+              Bairro sugerido pela localização atual. Você pode editar se necessário.
+            </p>
+
             <FormInput
-                label="Local da Foto"
-                type="text"
-                value={formData.localFoto}
-                onChange={handleChange("localFoto")}
-              />
+              label="Local da Foto"
+              type="text"
+              value={formData.localFoto}
+              onChange={handleChange("localFoto")}
+            />
 
             <FormInput
               label="Data"
@@ -463,6 +469,7 @@ export default function NovaAnalisePage() {
                   handleSubmit
                 }
                 fullWidth
+                disabled={loading}
               >
                 {loading
                   ? "Analisando imagem..."
@@ -504,6 +511,21 @@ export default function NovaAnalisePage() {
             </div>
           </div>
         </div>
+        {loading && (
+          <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-24 h-24 border-8 border-green-200 border-t-green-500 rounded-full animate-spin mx-auto" />
+
+              <h2 className="mt-6 text-2xl font-bold">
+                Nova Análise
+              </h2>
+
+              <p className="mt-2 text-slate-500">
+                Analisando imagem...
+              </p>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

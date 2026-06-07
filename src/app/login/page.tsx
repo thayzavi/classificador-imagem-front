@@ -13,18 +13,24 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
+  setErrorMessage("");
+
+  // Validação dos campos
+  if (!email.trim() || !senha.trim()) {
+    setErrorMessage("Preencha todos os campos.");
+    return;
+  }
+
   try {
     setLoading(true);
 
     const response = await login(email, senha);
-
-  
-    console.log("FULL RESPONSE:", response);
 
     if (response.token) {
       localStorage.setItem("token", response.token);
@@ -37,15 +43,34 @@ const handleSubmit = async (e: React.FormEvent) => {
       );
     }
 
-    alert("Login realizado com sucesso!");
     router.push("/dashboard");
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("ERRO LOGIN:", error);
 
-    if (error instanceof Error) {
-      alert(error.message);
+    // Tratamento baseado no retorno da API
+    const message =
+      error?.response?.data?.msg ||
+      error?.response?.data?.message ||
+      error?.message;
+
+    if (
+      message?.toLowerCase().includes("usuário") ||
+      message?.toLowerCase().includes("usuario") ||
+      message?.toLowerCase().includes("não encontrado")
+    ) {
+      setErrorMessage("Usuário não cadastrado.");
+    } else if (
+      message?.toLowerCase().includes("senha")
+    ) {
+      setErrorMessage("Senha incorreta.");
+    } else if (
+      error?.response?.status === 401
+    ) {
+      setErrorMessage("E-mail ou senha inválidos.");
     } else {
-      alert("Erro ao fazer login. Verifique o console.");
+      setErrorMessage(
+        "Não foi possível realizar o login. Tente novamente."
+      );
     }
   } finally {
     setLoading(false);
@@ -83,6 +108,12 @@ const handleSubmit = async (e: React.FormEvent) => {
               onChange={(e) => setSenha(e.target.value)}
               required
             />
+
+            {errorMessage && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                {errorMessage}
+              </div>
+            )}
 
             <div className="pt-4">
               <PrimaryButton

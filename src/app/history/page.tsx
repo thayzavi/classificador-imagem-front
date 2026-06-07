@@ -11,6 +11,7 @@ interface Analise {
   bairro: string;
   local: string;
   resultado: string;
+  imagem_url: string;
   confianca: number;
   data_foto: string;
 }
@@ -251,9 +252,10 @@ export default function HistoricoPage() {
                     border
                     border-slate-100
                     hover:border-[#0891B2]
-                    hover:shadow-xl
                     transition-all
                     cursor-pointer
+                    pr-5
+                    mb-2
                   "
                 >
                   <div
@@ -267,29 +269,39 @@ export default function HistoricoPage() {
                     "
                   >
                     <div>
-                      <h2 className="font-bold text-lg text-slate-800">
-                        {analise.local}
-                      </h2>
+                      <div className="bg-white rounded-2xl p-4 flex gap-4">
+                        <img
+                          src={analise.imagem_url}
+                          alt="Imagem analisada"
+                          className="w-32 h-32 rounded-xl object-cover"
+                        />
 
-                      <p className="text-slate-500 mt-1">
-                        {analise.data_foto}
-                      </p>
+                        <div className="flex-1">
+                          <h2 className="font-bold text-lg text-slate-800">
+                            {analise.local}
+                          </h2>
 
-                      <p className="text-slate-500">
-                        Bairro: {analise.bairro}
-                      </p>
+                          <p className="text-slate-500 mt-1">
+                            {analise.data_foto}
+                          </p>
 
-                      <p className="text-slate-500">
-                        Confiança: {Number(analise.confianca).toFixed(2)}%
-                      </p>
-                    </div>
+                          <p className="text-slate-500">
+                            Bairro: {analise.bairro}
+                          </p>
 
-                    <div className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-medium bg-gradient-to-r from-[#00C9A7] via-[#0891B2] to-[#1565F0]">
-                      <Eye size={18} />
-                      Ver detalhes
+                          <p className="text-slate-500">
+                            Resultado: {analise.resultado}
+                          </p>
+                        </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-medium bg-gradient-to-r from-[#00C9A7] via-[#0891B2] to-[#1565F0]">
+                        <Eye size={18} />
+                        Ver detalhes
+                      </div>
                     </div>
                   </div>
-                </div>
               </Link>
             ))}
           </div>
