@@ -24,7 +24,6 @@ interface Analysis {
 
   resultado: string;
   classe: string;
-  confianca: number;
 
   imagem_url: string;
 
@@ -281,12 +280,6 @@ export default function AnalysisDetailsPage() {
 
             <p className="text-lg font-semibold">
               {analysis.resultado}
-            </p>
-
-            <p className="text-slate-500 mt-2">
-              Confiança da IA:
-              {" "}
-              {analysis.confianca}%
             </p>
           </div>
 

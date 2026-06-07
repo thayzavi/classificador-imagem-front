@@ -15,7 +15,6 @@ interface Analysis {
 
   resultado: string;
   classe: string;
-  confianca: number;
 
   imagem_url: string;
 
