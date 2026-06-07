@@ -368,10 +368,9 @@ export default function NovaAnalisePage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".jpg,.jpeg,.png"
-                onChange={
-                  handleFileSelect
-                }
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
                 className="hidden"
               />
 
